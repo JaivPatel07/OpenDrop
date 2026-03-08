@@ -1,6 +1,10 @@
 # OpenDrop
 
-A free, secure, and open-source file sharing tool. Transfer files across your local network directly from device to device using WebRTC, or upload and share via link.
+A free, secure, source-available file sharing tool. Transfer files across your local network directly from device to device using WebRTC, or upload and share via link.
+
+## License
+
+This project is proprietary and is **not** open-source. See `LICENSE` for terms.
 
 ## How to Use
 
