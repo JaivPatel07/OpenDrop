@@ -1,14 +1,19 @@
 # OpenDrop
 
-A free, secure, and open-source alternative to Snapdrop. Transfer files across your local network directly from device to device using WebRTC.
+A free, secure, and open-source file sharing tool. Transfer files across your local network directly from device to device using WebRTC, or upload and share via link.
+
+## How to Use
+
+1. **Same Network Transfer** — Open OpenDrop on two devices connected to the same Wi-Fi. They auto-discover each other. Click a peer to send a file directly (peer-to-peer, no server involved).
+2. **Share via Link** — Click **"Share via Link"** to upload a file and get a shareable download link (expires in 24 hours). Send the link to anyone.
 
 ## How it works
 
 OpenDrop relies on two parts:
 1. **The Client (Frontend):** A static HTML/CSS/JS site hosted on GitHub Pages. It manages the UI and the Peer-to-Peer WebRTC connection.
-2. **The Server (Backend):** A lightweight Node.js WebSocket signaling server. It matches devices that have the same public IP address (i.e. on the same Wi-Fi) and introduces them so they can connect directly.
+2. **The Server (Backend):** A lightweight Node.js WebSocket signaling server. It matches devices that have the same public IP address (i.e. on the same Wi-Fi) and introduces them so they can connect directly. It also handles file uploads for shareable links.
 
-Your files *never* touch the signaling server. They are sent entirely Peer-to-Peer over your local network using secure WebRTC Data Channels.
+For local transfers, your files *never* touch the signaling server. They are sent entirely Peer-to-Peer over your local network using secure WebRTC Data Channels.
 
 ## Hosting for Free
 
