@@ -517,3 +517,30 @@ main {
   color: var(--accent-primary);
   transform: translateY(-2px);
 }
+
+.star-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  padding: 0.4rem 1rem;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.star-btn:hover {
+  color: #fbbf24;
+  border-color: #fbbf24;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+}
+
+.star-btn i {
+  font-size: 0.95rem;
+}
