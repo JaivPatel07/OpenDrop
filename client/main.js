@@ -28,6 +28,7 @@ const statusText = document.getElementById('connectionStatusText');
 const myNameEl = document.getElementById('myName');
 const peersContainer = document.getElementById('peersContainer');
 const fileInput = document.getElementById('fileInput');
+const radarContainer = document.querySelector('.radar-container');
 
 // Overlay Elements
 const modalOverlay = document.getElementById('modalOverlay');
@@ -129,11 +130,9 @@ function addPeer(id, name) {
     if (peers.has(id)) return;
 
     const angle = Math.random() * Math.PI * 2;
-        // Use container size to scale distance
-    const containerSize = Math.min(
-        document.querySelector('.radar-container').offsetWidth, 
-        document.querySelector('.radar-container').offsetHeight
-    );
+    // Use container size to scale distance dynamically for all screen sizes
+    const containerSize = Math.min(radarContainer.offsetWidth, radarContainer.offsetHeight);
+  
     const maxDistance = containerSize * 0.35; // 35% of container radius
     const distance = maxDistance * (0.6 + Math.random() * 0.4);
 
