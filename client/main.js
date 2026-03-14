@@ -900,20 +900,14 @@ function handleFileComplete(msg) {
         receivedChunks = [];
         currentFileReceivedSize = 0;
         batchReceivedSize = 0;
-        // Also clear any global transfer-in-progress flag and close the incoming transfer UI.
-        if (typeof transferInProgress !== 'undefined') {
-            transferInProgress = false;
+        // Also close any visible batch modal and overlay, matching other cancel/close paths.
+        const modalOverlay = document.getElementById('modalOverlay');
+        if (modalOverlay) {
+            modalOverlay.classList.add('hidden');
         }
-        // If there is a dedicated helper to close the incoming modal, use it defensively.
-        if (typeof closeIncomingModal === 'function') {
-            closeIncomingModal();
-        } else {
-            // Fallback: hide a likely incoming-transfer modal element if present.
-            const incomingModalEl = document.getElementById('incomingModal');
-            if (incomingModalEl) {
-                incomingModalEl.classList.add('hidden');
-            }
-        }
+        document.querySelectorAll('.modal.batch-modal').forEach((modal) => {
+            modal.remove();
+        });
         return;
     }
 
@@ -929,20 +923,14 @@ function handleFileComplete(msg) {
         receivedChunks = [];
         currentFileReceivedSize = 0;
         batchReceivedSize = 0;
-        // Also clear any global transfer-in-progress flag and close the incoming transfer UI.
-        if (typeof transferInProgress !== 'undefined') {
-            transferInProgress = false;
+        // Also close any visible batch modal and overlay, matching other cancel/close paths.
+        const modalOverlay = document.getElementById('modalOverlay');
+        if (modalOverlay) {
+            modalOverlay.classList.add('hidden');
         }
-        // If there is a dedicated helper to close the incoming modal, use it defensively.
-        if (typeof closeIncomingModal === 'function') {
-            closeIncomingModal();
-        } else {
-            // Fallback: hide a likely incoming-transfer modal element if present.
-            const incomingModalEl = document.getElementById('incomingModal');
-            if (incomingModalEl) {
-                incomingModalEl.classList.add('hidden');
-            }
-        }
+        document.querySelectorAll('.modal.batch-modal').forEach((modal) => {
+            modal.remove();
+        });
         return;
     }
 
