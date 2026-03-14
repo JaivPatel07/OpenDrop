@@ -86,11 +86,9 @@ app.post('/upload-batch', (req, res, next) => {
                 if (Array.isArray(req.files)) {
                     for (const file of req.files) {
                         if (file && file.path) {
-                            try {
-                                fs.unlinkSync(file.path);
-                            } catch (unlinkErr) {
+                            fs.unlink(file.path, () => {
                                 // Ignore cleanup errors; main error response still returned
-                            }
+                            });
                         }
                     }
                 }
