@@ -358,6 +358,17 @@ fileInput.addEventListener('change', async (e) => {
 async function initiateTransfer(peerId, files) {
     const peer = peers.get(peerId);
 
+    // If the peer no longer exists, bail out and reset any transfer state
+      if (!peer) {
+          if (typeof transferInProgress !== 'undefined') {
+              transferInProgress = false;
+          }
+          if (typeof outgoingBatch !== 'undefined') {
+              outgoingBatch = null;
+          }
+          showToast('The selected recipient is no longer available.', 'error');
+          return;
+      }
      // Mark transfer as in progress as soon as a transfer is initiated
      if (typeof transferInProgress !== 'undefined') {
          transferInProgress = true;
@@ -420,6 +431,13 @@ async function initiateTransfer(peerId, files) {
 function sendBatchHeader(peerId, files) {
     const peer = peers.get(peerId);
     if (!peer?.dataChannel || peer.dataChannel.readyState !== 'open') {
+          // Data channel is not ready: reset transfer state to avoid leaving UI stuck
+         if (typeof transferInProgress !== 'undefined') {
+             transferInProgress = false;
+         }
+         if (typeof outgoingBatch !== 'undefined') {
+             outgoingBatch = null;
+         }
         showToast('Connection not ready. Try again.', 'error');
         return;
     }
