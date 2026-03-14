@@ -896,17 +896,20 @@ function handleFileComplete(msg) {
             normalizedIndex: completedIndex,
         });
         // Reset transfer state to avoid associating incorrect data with a file.
+        transferInProgress = false;
         incomingBatch = null;
         receivedChunks = [];
         currentFileReceivedSize = 0;
         batchReceivedSize = 0;
+        transferInProgress = false;
         // Also close any visible batch modal and overlay, matching other cancel/close paths.
         const modalOverlay = document.getElementById('modalOverlay');
         if (modalOverlay) {
             modalOverlay.classList.add('hidden');
         }
         document.querySelectorAll('.modal.batch-modal').forEach((modal) => {
-            modal.remove();
+           modal.classList.remove('batch-modal');
+             modal.classList.add('hidden');
         });
         return;
     }
@@ -919,6 +922,7 @@ function handleFileComplete(msg) {
             normalizedIndex: completedIndex,
         });
         // Reset transfer state to avoid associating incorrect data with a file.
+         transferInProgress = false;
         incomingBatch = null;
         receivedChunks = [];
         currentFileReceivedSize = 0;
@@ -929,7 +933,8 @@ function handleFileComplete(msg) {
             modalOverlay.classList.add('hidden');
         }
         document.querySelectorAll('.modal.batch-modal').forEach((modal) => {
-            modal.remove();
+            modal.classList.remove('batch-modal');
+             modal.classList.add('hidden');
         });
         return;
     }
