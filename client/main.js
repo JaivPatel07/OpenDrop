@@ -358,6 +358,15 @@ fileInput.addEventListener('change', async (e) => {
 async function initiateTransfer(peerId, files) {
     const peer = peers.get(peerId);
 
+    // Guard: peer might have disconnected between selection and transfer start
+    if (!peer) {
+        if (typeof currentTransferTarget !== 'undefined') {
+            currentTransferTarget = null;
+        }
+        showToast('Selected device is no longer available. Please choose a device again.', 'error');
+        return;
+    }
+
      if (!peer.connection || peer.connection.connectionState !== 'connected') {
          await startConnection(peerId);
 
