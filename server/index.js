@@ -76,37 +76,75 @@ app.post('/upload', upload.single('file'), (req, res) => {
 });
 
 // Batch upload endpoint (multiple files)
-app.post('/upload-batch', upload.array('files', 20), (req, res) => {
-    if (!req.files || req.files.length === 0) {
-        return res.status(400).json({ error: 'No files provided' });
-    }
+app.post('/upload-batch', (req, res, next) => {
+    upload.array('files', 20)(req, res, (err) => {
+        if (err) {
+            // Handle Multer-specific errors with clear JSON responses
+            if (err instanceof multer.MulterError) {
+                // Clean up any files that were already written before the error
+                if (Array.isArray(req.files)) {
+                    for (const file of req.files) {
+                        if (file && file.path) {
+                            try {
+                                fs.unlinkSync(file.path);
+                            } catch (unlinkErr) {
+                                // Ignore cleanup errors; main error response still returned
+                            }
+                        }
+                    }
+                }
 
-    const expiresAt = Date.now() + FILE_EXPIRY_MS;
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-    const host = req.headers['x-forwarded-host'] || req.get('host');
-    const fileEntries = [];
+                let statusCode = 400;
+                let message = 'File upload error';
 
-    for (const file of req.files) {
-        const fileId = uuidv4();
-        uploadedFiles.set(fileId, {
-            originalName: file.originalname,
-            mimeType: file.mimetype,
-            filePath: file.path,
-            size: file.size,
-            expiresAt,
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    statusCode = 413;
+                    message = `File too large. Maximum allowed size is ${MAX_FILE_SIZE} bytes.`;
+                } else if (err.code === 'LIMIT_FILE_COUNT') {
+                    statusCode = 400;
+                    message = 'Too many files uploaded. Maximum allowed is 20 files per request.';
+                } else if (err.message) {
+                    message = err.message;
+                }
+
+                return res.status(statusCode).json({ error: message });
+            }
+
+            // Non-Multer errors: delegate to the next error handler
+            return next(err);
+        }
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No files provided' });
+        }
+
+        const expiresAt = Date.now() + FILE_EXPIRY_MS;
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+        const host = req.headers['x-forwarded-host'] || req.get('host');
+        const fileEntries = [];
+
+        for (const file of req.files) {
+            const fileId = uuidv4();
+            uploadedFiles.set(fileId, {
+                originalName: file.originalname,
+                mimeType: file.mimetype,
+                filePath: file.path,
+                size: file.size,
+                expiresAt,
+            });
+            fileEntries.push({
+                id: fileId,
+                name: file.originalname,
+                size: file.size,
+                url: `${protocol}://${host}/download/${fileId}`,
+            });
+        }
+
+        res.json({
+            files: fileEntries,
+            totalSize: fileEntries.reduce((s, f) => s + f.size, 0),
+            expiresIn: '24 hours',
         });
-        fileEntries.push({
-            id: fileId,
-            name: file.originalname,
-            size: file.size,
-            url: `${protocol}://${host}/download/${fileId}`,
-        });
-    }
-
-    res.json({
-        files: fileEntries,
-        totalSize: fileEntries.reduce((s, f) => s + f.size, 0),
-        expiresIn: '24 hours',
     });
 });
 
