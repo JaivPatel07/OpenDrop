@@ -17,6 +17,12 @@
   padding: 0;
 }
 
+/* Generic hidden utility (not for modal-overlay which uses opacity) */
+.file-progress-mini.hidden,
+.progress-container.hidden {
+  display: none;
+}
+
 body {
   font-family: 'Outfit', sans-serif;
   background-color: var(--bg-color);
@@ -304,6 +310,149 @@ main {
 .file-size {
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+/* Multi-file modal adjustments */
+.modal.batch-modal {
+  max-width: 480px;
+}
+
+.batch-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.file-list {
+  max-height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-right: 0.25rem;
+}
+
+.file-list::-webkit-scrollbar {
+  width: 4px;
+}
+.file-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+.file-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.file-list-item i:first-child {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.file-list-item .file-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-list-item .file-name {
+  font-size: 0.85rem;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-list-item .file-size {
+  font-size: 0.75rem;
+}
+
+.file-list-item.active {
+  border-color: var(--accent-primary);
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.file-list-item.active i:first-child {
+  color: var(--accent-primary);
+}
+
+.file-list-item.completed {
+  opacity: 0.7;
+}
+
+.file-list-item.completed i:first-child {
+  color: var(--success);
+}
+
+.file-status {
+  flex-shrink: 0;
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.file-list-item.completed .file-status {
+  color: var(--success);
+}
+
+.file-progress-mini {
+  width: 60px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.progress-bar-mini {
+  height: 100%;
+  background: var(--accent-primary);
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+.peer-node.drag-over .avatar {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 25px var(--accent-glow), 0 0 50px rgba(59, 130, 246, 0.2);
+  color: var(--accent-primary);
+  transform: scale(1.1);
+}
+
+.peer-node.drag-over .peer-name {
+  color: var(--accent-primary);
+}
+
+.file-download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.file-download-btn:hover {
+  background: #2563eb;
 }
 
 .modal-actions {

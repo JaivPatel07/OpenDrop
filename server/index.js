@@ -6,9 +6,45 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const MAX_BATCH_SIZE = 500 * 1024 * 1024; // 500 MB maximum total size per batch
 
 const app = express();
 app.use(cors());
+
+ // Enforce a hard upper bound on total request size before Multer processes uploads.
+ // This guards against bandwidth/disk DoS where many individually valid files
+ // exceed MAX_BATCH_SIZE in aggregate within a single request. For body-carrying
+ // methods we require a valid Content-Length so that this limit cannot be bypassed
+ // via chunked/unknown-length uploads.
+ app.use((req, res, next) => {
+     // Only enforce for requests that are likely to carry a body (e.g. POST/PUT/PATCH)
+     const method = req.method && req.method.toUpperCase();
+     if (method !== 'POST' && method !== 'PUT' && method !== 'PATCH') {
+         return next();
+     }
+     const contentLengthHeader = req.headers['content-length'];
+     if (!contentLengthHeader) {
+         // Reject requests without Content-Length so MAX_BATCH_SIZE cannot be bypassed
+         // using chunked transfer encoding or unknown-length uploads.
+         return res.status(411).json({
+             error: `Content-Length header is required for upload requests and must not exceed ${MAX_BATCH_SIZE} bytes.`,
+         });
+     }
+     const contentLength = parseInt(contentLengthHeader, 10);
+     if (!Number.isFinite(contentLength) || contentLength < 0) {
+         // Malformed Content-Length: reject rather than falling through to Multer.
+         return res.status(411).json({
+             error: `Invalid Content-Length header. A valid Content-Length up to ${MAX_BATCH_SIZE} bytes is required.`,
+         });
+     }
+     if (contentLength > MAX_BATCH_SIZE) {
+         return res.status(413).json({
+             error: `Request payload too large. Maximum allowed total upload size is ${MAX_BATCH_SIZE} bytes.`,
+         });
+     }
+     return next();
+ });
+
 
 // Health check endpoint for Koyeb/Render/Railway
 app.get('/health', (req, res) => {
@@ -72,6 +108,97 @@ app.post('/upload', upload.single('file'), (req, res) => {
         name: req.file.originalname,
         size: req.file.size,
         expiresIn: '24 hours'
+    });
+});
+
+// Batch upload endpoint (multiple files)
+app.post('/upload-batch', (req, res, next) => {
+    upload.array('files', 20)(req, res, (err) => {
+        if (err) {
+            // Handle Multer-specific errors with clear JSON responses
+            if (err instanceof multer.MulterError) {
+                // Clean up any files that were already written before the error
+                if (Array.isArray(req.files)) {
+                    for (const file of req.files) {
+                        if (file && file.path) {
+                            fs.unlink(file.path, () => {
+                                // Ignore cleanup errors; main error response still returned
+                            });
+                        }
+                    }
+                }
+
+                let statusCode = 400;
+                let message = 'File upload error';
+
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    statusCode = 413;
+                    message = `File too large. Maximum allowed size is ${MAX_FILE_SIZE} bytes.`;
+                } else if (err.code === 'LIMIT_FILE_COUNT' || err.code === 'LIMIT_UNEXPECTED_FILE') {
+                    statusCode = 400;
+                    message = 'Too many files uploaded. Maximum allowed is 20 files per request.';
+                } else if (err.message) {
+                    message = err.message;
+                }
+
+                return res.status(statusCode).json({ error: message });
+            }
+
+          // Non-Multer errors: return a JSON error response instead of relying on the default HTML handler
+             const statusCode = 500;
+             const message = err && err.message ? err.message : 'Internal server error during file upload.';
+             return res.status(statusCode).json({ error: message });
+        }
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No files provided' });
+        }
+
+         const totalBytes = req.files.reduce((sum, file) => {
+             const size = typeof file.size === 'number' ? file.size : 0;
+             return sum + size;
+         }, 0);
+         if (totalBytes > MAX_BATCH_SIZE) {
+             // Clean up uploaded files if batch size exceeds limit
+             for (const file of req.files) {
+                 if (file && file.path) {
+                     fs.unlink(file.path, () => {
+                         // Ignore cleanup errors; main error response still returned
+                       });
+                 }
+             }
+             return res.status(413).json({
+                 error: `Total uploaded file size exceeds limit of ${MAX_BATCH_SIZE} bytes.`,
+             });
+         }
+
+        const expiresAt = Date.now() + FILE_EXPIRY_MS;
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+        const host = req.headers['x-forwarded-host'] || req.get('host');
+        const fileEntries = [];
+
+        for (const file of req.files) {
+            const fileId = uuidv4();
+            uploadedFiles.set(fileId, {
+                originalName: file.originalname,
+                mimeType: file.mimetype,
+                filePath: file.path,
+                size: file.size,
+                expiresAt,
+            });
+            fileEntries.push({
+                id: fileId,
+                name: file.originalname,
+                size: file.size,
+                url: `${protocol}://${host}/download/${fileId}`,
+            });
+        }
+
+        res.json({
+            files: fileEntries,
+            totalSize: fileEntries.reduce((s, f) => s + f.size, 0),
+            expiresIn: '24 hours',
+        });
     });
 });
 
