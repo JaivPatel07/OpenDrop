@@ -20,7 +20,9 @@ jobs:
           node-version: 18
 
       - name: Install Dependencies
+        working-directory: ./server
         run: npm install
 
       - name: Run Tests
-        run: npm test
+        working-directory: ./server
+        run: npx vitest run
