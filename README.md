@@ -27,6 +27,7 @@ Transfer files across your local network directly from device to device using We
   - [2. Install Dependencies](#2-install-dependencies)
   - [3. Run the Signaling Server](#3-run-the-signaling-server)
   - [4. Serve the Frontend](#4-serve-the-frontend)
+- [Running Tests](#running-tests)
 - [Self-Hosting](#self-hosting)
   - [Frontend — GitHub Pages](#frontend--github-pages)
   - [Backend — Signaling Server](#backend--signaling-server)
@@ -179,6 +180,31 @@ python3 -m http.server 8080
 ```
 
 Then open `http://localhost:8080` in your browser.
+
+---
+
+## Running Tests
+
+### Prerequisites
+
+- Node.js 16+ and npm installed
+- Server dependencies installed in the `server` folder (`npm install`)
+
+### Commands
+
+From the project root:
+
+```bash
+cd server
+npx vitest run
+```
+
+Or run the npm test script (watch mode):
+
+```bash
+cd server
+npm test
+```
 
 ---
 

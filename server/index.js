@@ -366,6 +366,10 @@ wss.on('connection', (ws, req) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Signaling server running on port ${PORT}`);
-});
+
+if (process.env.NODE_ENV !== 'test') {
+    server.listen(PORT, () => {
+        console.log(`Signaling server running on port ${PORT}`);
+    });
+}
+export { app, server };
