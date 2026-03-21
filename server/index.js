@@ -372,4 +372,4 @@ if (process.env.NODE_ENV !== 'test') {
         console.log(`Signaling server running on port ${PORT}`);
     });
 }
-export { app, server };
+module.exports = { app, server };
