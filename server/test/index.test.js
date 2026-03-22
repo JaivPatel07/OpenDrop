@@ -60,12 +60,15 @@ function connectAndInitClient() {
     const timeout = setTimeout(() => {
       client.off('error', onError);
       client.off('message', onMessage);
+      terminateClient(client);
       reject(new Error('Timed out waiting for init message'));
     }, 3000);
 
     const onError = (err) => {
       clearTimeout(timeout);
+      client.off('error', onError);
       client.off('message', onMessage);
+      terminateClient(client);
       reject(err);
     };
 
