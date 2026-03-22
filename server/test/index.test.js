@@ -2,7 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import WebSocket from 'ws';
 
-import { app, server } from '../index.js';
+import serverModule from '../index.js';
+const { app, server } = serverModule;
 
 let baseURL;
 let uploadedFileId;
